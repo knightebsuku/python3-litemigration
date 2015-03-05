@@ -2,12 +2,14 @@
 
 import sqlite3
 import datetime as dt
+import logging
 
 class Database(object):
     "Create migration control"
-    def __init__(self, db):
+    def __init__(self, db,logger = None):
         self.connect = sqlite3.connect(db)
         self.cursor = self.connect.cursor()
+        self.logger = logging.getLogger(__name__)
 
     def initialise(self):
         "Create new database on new start"
@@ -20,7 +22,7 @@ class Database(object):
             self.connect.commit()
             self.connect.close()
         except sqlite3.OperationalError as e:
-            print(e)
+            self.logger.exeception(e)
             exit()
 
     def add_schema(self, change_list):
@@ -29,14 +31,14 @@ class Database(object):
             self.cursor.execute('SELECT max(version) from migration')
             (max_id,) = self.cursor.fetchone()
             if max_id >= change_id:
-                print("schema change {} is smaller the lastest schema change {} or new change id has already being applied".format(change_id, max_id))
+                self.logger.info("schema change {} is smaller the lastest schema change {} or new change id has already being applied".format(change_id, max_id))
             else:
                 try:
                     self.connect.execute(sql_statement)
                     self.connect.execute("INSERT INTO migration(version,date) VALUES(?,?)",
                                          (change_id, dt.datetime.now(),))
                     self.connect.commit()
-                except sqlite3.OperationalError as e:
-                    print("Unable to add schema {}".format(change_id))
-                    print(e)
+                except sqlite3.OperationalError:
+                    self.logger.error("Unable to add schema {}".format(change_id),
+                                         exc_info=True)
                     exit()
