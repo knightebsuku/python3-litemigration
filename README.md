@@ -3,13 +3,16 @@
 Simple module to keep database changes up to date in raw sql
 
 While I was busy building small database based applications, I needed a way to 
+
 1. modify the database without corrupting the current data
 2. keeping track of all the changes that have been made
 
 All my small applications are done in raw sql, so it made sense to make/track changes in sql as well.
 
 Two of my Gtk application use this module
+
 [Letmenotifyu](https://github.com/stucomplex/letmenotifyu)
+
 [ClientContacts](https://github.com/stucomplex/ClientContacts)
 
 ## Supported Databases
