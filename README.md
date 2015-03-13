@@ -44,3 +44,8 @@ So if you want to add a new change all you would have to do is to add another en
 ```
 When your application starts up it will run through all the changes to make sure they have been applied and apply any new ones.
 
+## Installation
+
+I've included a releases folder which contains a .deb file
+[deb](https://github.com/stucomplex/python3-litemigration/blob/master/releases/python3-litemigration_1.0.0-1_all.deb)
+
