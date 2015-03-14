@@ -47,5 +47,4 @@ When your application starts up it will run through all the changes to make sure
 ## Installation
 
 I've included a releases folder which contains a .deb file
-[deb](https://github.com/stucomplex/python3-litemigration/blob/master/releases/python3-litemigration_1.0.0-1_all.deb)
 
