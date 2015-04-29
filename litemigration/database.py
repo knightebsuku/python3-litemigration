@@ -54,7 +54,6 @@ class Database(object):
             self.cursor.execute(initial_insert,
                                 (dt.datetime.now(),))
             self.connect.commit()
-            print("OK")
             self.logger.info("Database has been created")
         except Exception as e:
             self.logger.error("Unable to add migration table")
@@ -91,7 +90,11 @@ class Database(object):
         "create postgresql connections"
         try:
             import psycopg2
-            connect = psycopg2.connect(self.database)
+            connect = psycopg2.connect(database=self.database,
+                                       host=self.host,
+                                       user=self.user,
+                                       password=self.password,
+                                       port=self.port)
             return connect
         except ImportError:
             self.logger.error("Unable to find python postgresql module")
