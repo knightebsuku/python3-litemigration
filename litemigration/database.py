@@ -4,8 +4,6 @@ import datetime as dt
 import logging
 
 
-logging.getLogger(__name__)
-
 class Database(object):
     "Create migration control"
     def __init__(self, db_type, host=None, port=None, user=None,
@@ -16,20 +14,22 @@ class Database(object):
         self.user = user
         self.password = password
         self.database = database
-        self.connect = self._get_connector()
+        self.details = ""
+        self.logger = logging.getLogger(__name__)
+        self.connect = self.get_connector()
         self.cursor = self.connect.cursor()
 
-    def _get_connector(self):
+    def get_connector(self):
         all_db = {'postgresql': self._postgresql,
                          'sqlite': self._sqlite}
         try:
             connect = all_db[self.db_type]()
             return connect
         except KeyError:
-            logging.critical("Unknown database or not supported")
+            self.logger.critical("Unknown database or not supported")
             exit()
 
-    def _get_sql(self):
+    def get_sql(self):
         sqlite_create = ["CREATE TABLE migration("\
           'id INTEGER PRIMARY KEY NOT NULL,'\
           'version INTEGER UNIQUE NOT NULL,'\
@@ -48,15 +48,16 @@ class Database(object):
         return all_sql[self.db_type]
 
     def initialise(self):
-        [create_table, initial_insert] = self._get_sql()
+        [create_table, initial_insert] = self.get_sql()
         try:
             self.cursor.execute(create_table)
             self.cursor.execute(initial_insert,
                                 (dt.datetime.now(),))
             self.connect.commit()
-            logging.info("Database has been created")
+            self.logger.info("Database has been created")
         except Exception as e:
-            self.logger.error("Unable to add migration table",exc_info=True)
+            self.logger.error("Unable to add migration table")
+            self.logger.error(e)
             exit()
             
     def add_schema(self, change_list):
@@ -70,7 +71,7 @@ class Database(object):
             self.cursor.execute('SELECT max(version) from migration')
             (max_id,) = self.cursor.fetchone()
             if max_id >= change_id:
-                logging.info("schema change {} is smaller the lastest schema change {}"\
+                self.logger.info("schema change {} is smaller the lastest schema change {}"\
                                  " or new change id has already being applied".format(change_id,
                                                                                       max_id))
             else:
@@ -79,9 +80,9 @@ class Database(object):
                     self.cursor.execute(insert_sql,
                                          (change_id, dt.datetime.now(),))
                     self.connect.commit()
-                    logging.info("new schemas added")
+                    self.logger.info("new schemas added")
                 except Exception:
-                    logging.error("Unable to add schema {}".format(change_id),
+                    self.logger.error("Unable to add schema {}".format(change_id),
                                          exc_info=True)
                     exit()
 
@@ -89,13 +90,18 @@ class Database(object):
         "create postgresql connections"
         try:
             import psycopg2
-            connect = psycopg2.connect(self.database)
+            connect = psycopg2.connect(database=self.database,
+                                       host=self.host,
+                                       user=self.user,
+                                       password=self.password,
+                                       port=self.port)
             return connect
         except ImportError:
-            logging.error("Unable to find python postgresql module")
+            self.logger.error("Unable to find python postgresql module")
             exit()
-        except psycopg2.Error:
-            logging.error("Unable to connect to postgresql",exc_info=True)
+        except psycopg2.Error as e:
+            self.logging.error("Unable to connect to postgresql")
+            self.logging.exception(e)
             exit()
 
     def _sqlite(self):
@@ -105,5 +111,5 @@ class Database(object):
             connect = sqlite3.connect(self.database)
             return connect
         except sqlite3.OperationalError:
-            logging.error("Unable to connect to sqlite3 database",exc_info=True)
+            self.logging.error("unable to connect to sqlite database",exc_info=True)
             exit()
