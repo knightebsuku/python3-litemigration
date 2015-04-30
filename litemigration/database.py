@@ -100,8 +100,11 @@ class Database(object):
             self.logger.error("Unable to find python postgresql module")
             exit()
         except psycopg2.Error as e:
-            self.logging.error("Unable to connect to postgresql")
-            self.logging.exception(e)
+            self.logger.error("Unable to connect to postgresql")
+            self.logger.exception(e)
+            exit()
+        except psycopg2.OperationalError as e:
+            self.logger.exception(e)
             exit()
 
     def _sqlite(self):
