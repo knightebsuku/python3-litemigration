@@ -1,1 +1,1 @@
-525ebe3e44e7bf9565f38a652ba8ea8e  python3-litemigration_1.0.1-1_all.deb
+86f6aa9e5ad0fc14c2a554358d7ef940  python3-litemigration_1.0.2-1_all.deb
