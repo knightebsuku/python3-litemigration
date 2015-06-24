@@ -1,6 +1,6 @@
 # python3-litemigration 1.0.3
 
-Simple module to keep database changes up to date in raw sql
+Simple module to keep database changes up to date in sql
 
 While I was busy building small database based applications, I needed a way to 
 
