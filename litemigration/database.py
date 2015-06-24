@@ -2,7 +2,6 @@
 
 import datetime as dt
 import logging
-from . import snapshots
 
 
 class Database(object):
