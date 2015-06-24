@@ -1,4 +1,4 @@
-# python3-litemigration 1.0.2
+# python3-litemigration 1.0.3
 
 Simple module to keep database changes up to date in raw sql
 
@@ -26,25 +26,19 @@ PostgreSQL
 
 from litemigration.database import Database
 
-postgres = Database("postgresql",
-		database="host=localhost user=postgres password=postgres dbname=test")
-postgres.initialise() # create migration table and insert first change
-
-postgres.add_schema([
-    [1,"CREATE TABLE names(id SERIAL PRIMARY KEY,name TEXT)"],
-    [2,"INSERT INTO names(name) VALUES('Tommy')"],
-    [3,"INSERT INTO names(name) VALUES('Billy')"]
-    ])
+db = Database('sqlite', database="Test.sqlite")
+db.initialise()
+db.add_schema([
+    [1, "CREATE TABLE cats(id INTEGER PRIMARY KEY,name TEXT)"],
+    [2, "CREATE TABLE dogs(id INTEGER PRIMARY KEY)"],
+    [3, "CREATE TABLE house(id INTEGER)"],
+    [4, "INSERT INTO cats(name) VALUES('jow')"]
+])
 ```
 
 So if you want to add a new change all you would have to do is to add another entry to the add_schema method.
 
 ```python
-[4,"INSERT INTO names(name) VALUES('me')"]
+[5,"INSERT INTO names(name) VALUES('me')"]
 ```
 When your application starts up it will run through all the changes to make sure they have been applied and apply any new ones.
-
-## Installation
-
-I've included a releases folder which contains a .deb file
-
