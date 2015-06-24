@@ -2,6 +2,7 @@
 
 import datetime as dt
 import logging
+from . import snapshots
 
 
 class Database(object):
@@ -16,20 +17,20 @@ class Database(object):
         self.database = database
         self.details = ""
         self.logger = logging.getLogger(__name__)
-        self.connect = self.get_connector()
+        self.connect = self._get_connector()
         self.cursor = self.connect.cursor()
 
-    def get_connector(self):
-        all_db = {'postgresql': self._postgresql,
+    def _get_connector(self):
+        supported_databases = {'postgresql': self._postgresql,
                          'sqlite': self._sqlite}
         try:
-            connect = all_db[self.db_type]()
+            connect = supported_databases[self.db_type]()
             return connect
         except KeyError:
             self.logger.critical("Unknown database or not supported")
             exit()
 
-    def get_sql(self):
+    def _get_sql(self):
         sqlite_create = ["CREATE TABLE migration("\
           'id INTEGER PRIMARY KEY NOT NULL,'\
           'version INTEGER UNIQUE NOT NULL,'\
@@ -48,7 +49,7 @@ class Database(object):
         return all_sql[self.db_type]
 
     def initialise(self):
-        [create_table, initial_insert] = self.get_sql()
+        [create_table, initial_insert] = self._get_sql()
         try:
             self.cursor.execute(create_table)
             self.cursor.execute(initial_insert,
@@ -72,15 +73,14 @@ class Database(object):
             (max_id,) = self.cursor.fetchone()
             if max_id >= change_id:
                 self.logger.info("schema change {} is smaller the lastest schema change {}"\
-                                 " or new change id has already being applied".format(change_id,
-                                                                                      max_id))
+                                 " or new change id has already being applied".format(change_id, max_id))
             else:
                 try:
                     self.cursor.execute(sql_statement)
                     self.cursor.execute(insert_sql,
                                          (change_id, dt.datetime.now(),))
                     self.connect.commit()
-                    self.logger.info("new schemas added")
+                    self.logger.info("new schema added")
                 except Exception:
                     self.logger.error("Unable to add schema {}".format(change_id),
                                          exc_info=True)
@@ -97,7 +97,7 @@ class Database(object):
                                        port=self.port)
             return connect
         except ImportError:
-            self.logger.error("Unable to find python postgresql module")
+            self.logger.error("Unable to find python3 postgresql module")
             exit()
         except psycopg2.Error as e:
             self.logger.error("Unable to connect to postgresql")
