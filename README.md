@@ -1,4 +1,4 @@
-# python3-litemigration 1.0.3
+# python3-litemigration 1.1.0
 
 Simple module to keep database changes up to date in sql
 
