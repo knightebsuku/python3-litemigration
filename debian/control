@@ -1,0 +1,14 @@
+Source: python3-litemigration
+Section: unknown
+Priority: optional
+Maintainer: Lunga Mthembu <stumenz.complex@gmail.com>
+Build-Depends: debhelper (>= 9), python3 (>=3.5)
+Standards-Version: 3.9.7
+Homepage: https://github.com/stumenz/python3-litemigration/
+
+Package: python3-litemigration
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python3 (>=3.5)
+Description: Simple module to make database changes in raw sql
+ litemigration is a python module that helps manage database chnages in sql.
+ 

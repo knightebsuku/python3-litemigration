@@ -1,0 +1,12 @@
+Package: litemigration
+Source: python3-litemigration
+Version: 1.1.0-1
+Architecture: all
+Maintainer: Lunga Mthembu <stumenz.complex@gmail.com>
+Installed-Size: 28
+Depends: python3 (>= 3.5)
+Section: unknown
+Priority: optional
+Homepage: https://github.com/stumenz/python3-litemigration/
+Description: Simple module to make database changes in raw sql
+ Simple module to make database changes in raw sql
