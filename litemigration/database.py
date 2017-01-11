@@ -2,6 +2,7 @@
 
 import datetime as dt
 import logging
+import sys
 from typing import List, Tuple
 
 log = logging.getLogger(__name__)
@@ -31,8 +32,8 @@ class Database:
             connect = supported_databases[self.db_type]()
             return connect
         except KeyError:
-            self.logger.critical("Unknown database or not supported")
-            exit()
+            log.critical("Unknown database or not supported")
+            sys.exit()
 
     def _get_initail_sql_migration(self) -> Tuple[str, str]:
         """
@@ -69,7 +70,7 @@ class Database:
         except Exception as e:
             log.error("Unable to add migration table")
             log.exception(e)
-            exit()
+            sys.exit()
 
     def add_schema(self, change_list: List[Tuple[int, str]]):
         """
@@ -93,11 +94,11 @@ class Database:
                     self.cursor.execute(insert_sql,
                                         (change_id, dt.datetime.now(),))
                     self.connect.commit()
-                    self.logger.info("new schema added")
+                    log.info("new schema added")
                 except Exception:
                     log.error("Unable to add schema {}".format(change_id),
                               exc_info=True)
-                    exit()
+                    sys.exit()
 
     def _postgresql(self):
         "create postgresql connection and return the connection object"
@@ -111,14 +112,14 @@ class Database:
             return connect
         except ImportError:
             log.error("Unable to find python3 postgresql module")
-            exit()
+            sys.exit()
         except psycopg2.Error as e:
             log.error("Unable to connect to postgresql")
             log.exception(e)
-            exit()
+            sys.exit()
         except psycopg2.OperationalError as e:
             log.exception(e)
-            exit()
+            sys.exit()
 
     def _sqlite(self):
         """
@@ -131,4 +132,4 @@ class Database:
         except sqlite3.OperationalError:
             log.error("unable to connect to sqlite database",
                       exc_info=True)
-            exit()
+            sys.exit()
