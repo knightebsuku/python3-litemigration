@@ -31,7 +31,7 @@ class Database:
             connect = supported_databases[self.db_type]()
             return connect
         except KeyError:
-            self.logger.critical("Unknown database or not supported")
+            log.critical("Unknown database or not supported")
             exit()
 
     def _get_initail_sql_migration(self) -> Tuple[str, str]:
@@ -93,7 +93,7 @@ class Database:
                     self.cursor.execute(insert_sql,
                                         (change_id, dt.datetime.now(),))
                     self.connect.commit()
-                    self.logger.info("new schema added")
+                    log.info("new schema added")
                 except Exception:
                     log.error("Unable to add schema {}".format(change_id),
                               exc_info=True)
