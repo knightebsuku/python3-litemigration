@@ -1,5 +1,6 @@
-python3-litemigration (1.1.0-1) UNRELEASED; urgency=medium
+python3-litemigration (1.1.1) UNRELEASED; urgency=medium
 
   * Initial release
+  * fix logging
 
- -- lunga <stumenz.complex@gmail.com>  Tue, 03 Jan 2017 13:38:09 +0200
+ -- lunga <lunga@complex-laptop>  Mon, 16 Apr 2018 11:53:33 +0200

@@ -4,7 +4,7 @@ from distutils.core import setup
 
 if __name__ == '__main__':
     setup(name='litemigration',
-          version='1.1.0',
+          version='1.1.1',
           description='Simple simple module to help modify database changes in sqlite',
           author='Lunga Mthembu',
           author_email='stumenz.complex@gmail.com',
