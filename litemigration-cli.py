@@ -1,7 +1,9 @@
 import argparse
 import importlib
 
-def check_settings():
+from litemigration.database import Database
+
+def check_settings() -> dict:
     """
     Looks for database.py file with the list of migrations
     List of migrations variable should be migration_changes
@@ -9,30 +11,52 @@ def check_settings():
     """
     try:
         mod = importlib.import_module('database')
-        return mod
-        #print(type(mod))
-        #print(dir(mod))
-        #print(mod.migration_changes)
+        return {
+            'database': mod.db,
+            'changes': mod.MIGRATION_CHANGES
+        }
 
-    except ModuleNotFoundError:
-        print('Unable to find database file')
+    except ModuleNotFoundError as error:
+        print(f'Unable to find database file: {error}')
         exit()
-    except AttributeError:
-        print('Unable to find migration_changes')
+    except AttributeError as error:
+        print(f'Unable to find migration_changes: {error}')
         exit()
 
 
 
-def show_migrations():
+def show_migrations(params):
     """
-    Get
+    Show the status of the current migrations
     """
-    module = check_settings()
-    db = module.db
-    db.show_migrations(module.migration_changes)
+    settings = check_settings()
+    db = settings['database']
+    changes = settings['changes']
+    db.show_migrations(changes)
 
-def migration(direction: str):
-    print('Run forward or reverse migration')
+
+def migration(params):
+    """
+    * Add new migrations
+    * Reverse existing migrations
+    """
+    settings = check_settings()
+    db: Database = settings['database']
+    changes = settings['changes']
+    if params.direction == 'up':
+        db.add_migrations(changes)
+    elif params.direction == 'down' and params.dry:
+        if params.version == 0:
+            print("migration version needed")
+            exit()
+        else:
+            db.dry_run_reverse(params.version, changes)
+    elif params.direction == 'down':
+        if params.version == 0:
+            print("migration version needed")
+            exit()
+        else:
+            db.reverse_migrations(params.version, changes)
 
 
 if __name__ == '__main__':
@@ -43,37 +67,13 @@ if __name__ == '__main__':
     show_migration.set_defaults(func=show_migrations)
 
     migrate = subparsers.add_parser('migrate', help='Run forward or reverse migrations')
+    migrate.add_argument('direction', choices=['up', 'down'], help='forward [up] or reverse migration [down]')
+    migrate.add_argument('version', help='Version number at which to stop the migration', nargs='?', type=int, default=0)
+    migrate.add_argument('--dry', help='Show migrations to be reversed or applied', action='store_const', const=True)
     migrate.set_defaults(func=migration)
-    migrate.add_argument('direction', choices=['up', 'down'], help='forward or reverse migration')
 
     args = parser.parse_args()
-    args.func()
+    args.func(args)
 
 
-# showmigrations - show all migrations, including unapplied
-# migrate up - apply migrations
-# migrate down - reverse migrations upto a particular version
-#
-# from litemigration.database import SqliteDatabase, Migration
-#
-#
-# db = SqliteDatabase('example.db')
-# db.initialize()
-#
-# change = [
-#     Migration(
-#         version=2,
-#         up='CREATE TABLE player(name VARCHAR NOT NULL,score INTEGER)',
-#         down='DROP TABLE player'
-#     ),
-#     Migration(
-#         version=3,
-#         up='INSERT INTO player(name,score) VALUES("Menzi", 10)',
-#         down='DELETE FROM PLAYER where name="Menzi"'
-#     )
-# ]
-#
-#
-# db.add_migration(change)
-# #db.reverse_migration(2, change)
 
