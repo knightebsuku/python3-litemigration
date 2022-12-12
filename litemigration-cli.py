@@ -24,7 +24,6 @@ def check_settings() -> dict:
         exit()
 
 
-
 def show_migrations(params):
     """
     Show the status of the current migrations
@@ -50,13 +49,15 @@ def migration(params):
             print("migration version needed")
             exit()
         else:
-            db.dry_run_reverse(params.version, changes)
+            table = db.dry_run_reverse(params.version, changes)
+            print(table)
     elif params.direction == 'down':
         if params.version == 0:
             print("migration version needed")
             exit()
         else:
-            db.reverse_migrations(params.version, changes)
+            table = db.reverse_migrations(params.version, changes)
+            print(table)
 
 
 if __name__ == '__main__':

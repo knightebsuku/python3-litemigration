@@ -24,6 +24,9 @@ class MigrationException(Exception):
 
 
 class Database(ABC):
+    def __init__(self):
+        self.connect = self.connection()
+
     @abstractmethod
     def connection(self):
         pass
@@ -37,18 +40,55 @@ class Database(ABC):
         pass
 
     @abstractmethod
-    def show_migrations(self, change: List[Migration]):
-        print("Showing the database migrations")
-
-    @abstractmethod
     def reverse_migrations(self, version: int, change: List[Migration]):
         pass
+
+    def show_migrations(self, change: List[Migration]):
+        version = 0
+        data = []
+        data.append(['Applied', 'Version', 'Date'])
+
+        cur = self.connect.cursor()
+        cur.execute('SELECT version, date FROM migration')
+        applied = cur.fetchall()
+        for m in applied:
+            data.append([Color('{autogreen}Yes{/autogreen}'), m[0], m[1]])
+            version = m[0]
+
+        for m in change:
+            if version < m.version:
+                data.append([Color('{autored}No{/autored}'), m.version])
+
+        table = AsciiTable(data)
+        return table
+
+    def dry_run_reverse(self, version: int, change: List[Migration]):
+        """
+        Show which changes will be reversed (--dry)
+        """
+        data = []
+        data.append(['Reverse', 'Version'])
+
+        cur = self.connect.cursor()
+        cur.execute('SELECT max(version) from migration')
+        (max_id,) = cur.fetchone()
+        if version > max_id:
+            raise MigrationException('version greater than max version unable to reverse')
+
+        for migration in reversed(change):
+            if migration.version == version:
+                break
+            elif migration.version > version:
+                data.append([Color('{autogreen}Yes{/autogreen}'), migration.version])
+
+        table = AsciiTable(data)
+        return table
 
 
 class SqliteDatabase(Database):
     def __init__(self, name):
         self.name = name
-        self.connect = self.connection()
+        super().__init__()
 
     def connection(self):
         connect = sqlite3.connect(self.name)
@@ -75,7 +115,6 @@ class SqliteDatabase(Database):
         cur.execute('SELECT max(version) from migration')
         (max_version,) = cur.fetchone()
         for migration in change:
-            print(f'Current migration {migration} ')
             if max_version >= migration.version:
                 log.info(f'migration {migration.version} already applied')
                 continue
@@ -87,8 +126,10 @@ class SqliteDatabase(Database):
                 cur.execute(migration.up)
                 cur.execute("INSERT INTO migration(version,date) VALUES(?,?)", (migration.version, datetime.now()))
                 self.connect.commit()
+                print(f'Migration {migration.version} applied....' + Color('{autogreen}Ok{/autogreen}'))
                 max_version = migration.version
             except sqlite3.OperationalError as error:
+                print(f'Migration {migration.version} applied....' + Color('{autored}Error{/autored}'))
                 log.error(f'unable to apply migration {migration.version}')
                 raise MigrationException(error)
 
@@ -114,44 +155,3 @@ class SqliteDatabase(Database):
                 cur.execute('DELETE FROM migration where version=?', (migration.version,))
                 self.connect.commit()
         self.connect.close()
-
-    def show_migrations(self, change: List[Migration]):
-        version = 0
-        data = []
-        data.append(['Applied', 'Version', 'Date'])
-
-        cur = self.connect.cursor()
-        cur.execute('SELECT version, date FROM migration')
-        applied = cur.fetchall()
-        for m in applied:
-            data.append([Color('{autogreen}Yes{/autogreen}'), m[0], m[1]])
-            version = m[0]
-
-        for m in change:
-            if version < m.version:
-                data.append([Color('{autored}No{/autored}'), m.version])
-
-        table = AsciiTable(data)
-        print(table.table)
-
-    def dry_run_reverse(self, version: int, change: List[Migration]):
-        """
-        Show which changes will be reversed (--dry)
-        """
-        data = []
-        data.append(['Reverse', 'Version'])
-
-        cur = self.connect.cursor()
-        cur.execute('SELECT max(version) from migration')
-        (max_id,) = cur.fetchone()
-        if version > max_id:
-            raise MigrationException('version greater than max version unable to reverse')
-
-        for migration in reversed(change):
-            if migration.version == version:
-                break
-            elif migration.version > version:
-                data.append([Color('{autogreen}Yes{/autogreen}'), migration.version])
-
-        table = AsciiTable(data)
-        print(table.table)

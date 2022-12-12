@@ -1,3 +1,5 @@
 colorclass==2.2.2
--e git+ssh://git@github.com/knightebsuku/python3-litemigration.git@ef0bce2af201d420ceec0367e070ce031c46dd7f#egg=litemigration
+freezegun==1.2.2
+python-dateutil==2.8.2
+six==1.16.0
 terminaltables==3.1.10
