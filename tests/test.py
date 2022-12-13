@@ -37,19 +37,40 @@ class TestMigration(unittest.TestCase):
     def test_show_migrations(self):
         data = [
             ['Applied', 'Version', 'Date'],
-            [Color('{autogreen}Yes{/autogreen}'), 1, datetime.now()],
+            [Color('{autogreen}Yes{/autogreen}'), 1, str(datetime.now())],
             [Color('{autored}No{/autored}'), 2],
             [Color('{autored}No{/autored}'), 3]
         ]
         table = self.db.show_migrations(self.migration_changes)
-        print(table.table_data)
         self.assertEqual(data, table.table_data)
 
     def test_reverse_migrations(self):
-        pass
+        self.db.add_migrations(self.migration_changes)
+
+        self.db.connect = self.db.connection()
+        cur = self.db.connect.cursor()
+        cur.execute('SELECT max(version) FROM migration')
+        (max_id,) = cur.fetchone()
+        self.assertEqual(max_id, 3)
+
+        self.db.connect = self.db.connection()
+        self.db.reverse_migrations(1, self.migration_changes)
+
+        cur = self.db.connection().cursor()
+        cur.execute('SELECT max(version) FROM migration')
+        (max_id,) = cur.fetchone()
+        self.assertEqual(max_id, 1)
 
     def test_dry_reverse_migrations(self):
-        pass
+        self.db.add_migrations(self.migration_changes)
+        data = [
+            ['Reverse', 'Version'],
+            [Color('{autogreen}Yes{/autogreen}'), 3]
+        ]
+        # Reverse the last migration Version 3
+        self.db.connect = self.db.connection()
+        table = self.db.dry_run_reverse(2, self.migration_changes)
+        self.assertEqual(data, table.table_data)
 
     def tearDown(self) -> None:
         os.remove('test.db')
