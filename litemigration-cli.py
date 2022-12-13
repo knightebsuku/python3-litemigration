@@ -31,7 +31,8 @@ def show_migrations(params):
     settings = check_settings()
     db = settings['database']
     changes = settings['changes']
-    db.show_migrations(changes)
+    table = db.show_migrations(changes)
+    print(table)
 
 
 def migration(params):
@@ -50,14 +51,14 @@ def migration(params):
             exit()
         else:
             table = db.dry_run_reverse(params.version, changes)
-            print(table)
+            print(table.table)
     elif params.direction == 'down':
         if params.version == 0:
             print("migration version needed")
             exit()
         else:
             table = db.reverse_migrations(params.version, changes)
-            print(table)
+            print(table.table)
 
 
 if __name__ == '__main__':
