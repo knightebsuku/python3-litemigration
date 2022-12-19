@@ -32,7 +32,7 @@ def show_migrations(params):
     db = settings['database']
     changes = settings['changes']
     table = db.show_migrations(changes)
-    print(table)
+    print(table.table)
 
 
 def migration(params):
