@@ -76,6 +76,5 @@ class TestMigration(unittest.TestCase):
         os.remove('test.db')
 
 
-
 if __name__ == '__main__':
     unittest.main()
