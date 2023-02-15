@@ -4,11 +4,11 @@ from distutils.core import setup
 
 if __name__ == '__main__':
     setup(name='litemigration',
-          version='1.1.1',
-          description='Simple simple module to help modify database changes in sqlite',
+          version='2.0.0',
+          description='Super simple module to help modify database changes in sqlite',
           author='Lunga Mthembu',
-          author_email='stumenz.complex@gmail.com',
-          url='https://github.com/stumenz/python3-litemigration',
+          author_email='midnight.complex@protonmail.com',
+          url='https://github.com/knightebsuku/python3-litemigration',
           license='GPL',
           packages=['litemigration'],
           )
